@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: platform-backend:prod
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Use same-origin API calls via nginx (/api/*)
+        VITE_API_BASE_URL: ""
+    image: platform-frontend:prod
+
