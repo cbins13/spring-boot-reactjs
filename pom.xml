@@ -22,6 +22,8 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <jjwt.version>0.12.6</jjwt.version>
         <testcontainers.version>1.20.4</testcontainers.version>
+        <!-- Spring Boot 3.x compatible -->
+        <springdoc.version>2.8.5</springdoc.version>
     </properties>
 
     <dependencies>
@@ -91,6 +93,14 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Source: https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Dev tools for automatic restart in development (Maven: mark optional) -->

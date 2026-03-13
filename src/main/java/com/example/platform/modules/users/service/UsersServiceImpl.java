@@ -41,10 +41,11 @@ public class UsersServiceImpl implements UsersService {
         if (usersRepository.existsByEmail(request.getEmail().toLowerCase())) {
             throw new IllegalArgumentException("Email already in use");
         }
+        Role effectiveRole = request.getRole() != null ? request.getRole() : role;
         UserEntity entity = UserEntity.builder()
                 .email(request.getEmail().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(role)
+                .role(effectiveRole)
                 .build();
         return userMapper.toDto(usersRepository.save(entity));
     }
@@ -62,6 +63,9 @@ public class UsersServiceImpl implements UsersService {
         }
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             entity.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (request.getRole() != null) {
+            entity.setRole(request.getRole());
         }
         return userMapper.toDto(usersRepository.save(entity));
     }
