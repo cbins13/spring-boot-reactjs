@@ -48,8 +48,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setAccessToken(res.accessToken)
       setStatus('authenticated')
     } catch {
-      setAccessToken(null)
-      setStatus('unauthenticated')
+      // If refresh fails (invalid/expired refresh token or access token), log the user out.
+      // This will also best-effort revoke the refresh token on the backend and clear cached data.
+      await logout()
     }
   }
 

@@ -27,8 +27,8 @@ class UsersCrudIntegrationTest extends OracleTestContainerConfig {
     @Test
     void admin_can_list_and_delete_users() {
         // Create admin directly via users service boundary (no controller needed).
-        usersService.createUser(new CreateUserRequest("admin@example.com", "AdminPass123!"), Role.ROLE_ADMIN);
-        usersService.createUser(new CreateUserRequest("u2@example.com", "Password123!"), Role.ROLE_USER);
+        usersService.createUser(new CreateUserRequest("admin@example.com", "AdminPass123!", null), Role.ROLE_ADMIN);
+        usersService.createUser(new CreateUserRequest("u2@example.com", "Password123!", null), Role.ROLE_USER);
 
         AuthResponse login = restTemplate.postForEntity(
                 "/api/auth/login",
@@ -62,7 +62,7 @@ class UsersCrudIntegrationTest extends OracleTestContainerConfig {
 
     @Test
     void user_cannot_list_users() {
-        usersService.createUser(new CreateUserRequest("u3@example.com", "Password123!"), Role.ROLE_USER);
+        usersService.createUser(new CreateUserRequest("u3@example.com", "Password123!", null), Role.ROLE_USER);
         AuthResponse login = restTemplate.postForEntity(
                 "/api/auth/login",
                 new LoginRequest("u3@example.com", "Password123!"),

@@ -26,12 +26,33 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
 
 logging:
+  # File configuration
+  file:
+    path: ${LOG_PATH:logs}
+    name: ${LOG_FILE:application}
+  
+  # Log levels - focused on errors and warnings only
   level:
-    org.springframework.security: INFO
-    com.example.platform.modules.auth.controller: DEBUG
-    com.example.platform.modules.auth.service: DEBUG
+    root: WARN
+    com.example.platform: WARN
+    org.springframework: WARN
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate: ERROR
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.flywaydb: WARN
+    com.zaxxer.hikari: ERROR
+    oracle.jdbc: ERROR
+    
+  # Pattern configuration (fallback if logback-spring.xml is not used)
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
 
 app:
   jwt:

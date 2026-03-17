@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -114,13 +116,9 @@ public class AuthController {
         if (refreshToken != null && !refreshToken.isBlank()) {
             try {
                 authService.logout(refreshToken);
-
             } catch (Exception e) {
-                System.out.println("Failed to revoke refresh token: " + e.getMessage());
-
+                log.warn("Failed to revoke refresh token during logout: {}", e.getMessage());
             }
-        } else {
-            System.out.println("No refresh token found in cookies, proceeding with cookie clearing only");
         }
 
         // Clear refresh token cookie for all likely paths (handles legacy cookies set

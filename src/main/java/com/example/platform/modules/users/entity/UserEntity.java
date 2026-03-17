@@ -17,7 +17,7 @@ import java.time.Instant;
 @Builder
 @Entity
 @Table(name = "users", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_users_email", columnNames = {"email"})
+        @UniqueConstraint(name = "uk_users_email", columnNames = { "email" })
 })
 @EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
@@ -32,9 +32,9 @@ public class UserEntity {
     @Column(nullable = false, length = 100)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 50)
-    private Role role;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private java.util.Set<RoleEntity> roles = new java.util.HashSet<>();
 
     @CreatedDate
     @JdbcTypeCode(SqlTypes.TIMESTAMP)
@@ -48,7 +48,8 @@ public class UserEntity {
 
     /**
      * Oracle doesn't automatically update DEFAULT timestamp columns on update.
-     * We keep auditing annotations, but also ensure updatedAt is set at the JPA layer.
+     * We keep auditing annotations, but also ensure updatedAt is set at the JPA
+     * layer.
      */
     @PrePersist
     public void prePersist() {
@@ -65,4 +66,3 @@ public class UserEntity {
         updatedAt = Instant.now();
     }
 }
-

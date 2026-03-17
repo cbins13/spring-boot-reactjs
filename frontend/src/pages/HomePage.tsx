@@ -8,6 +8,7 @@ export function HomePage() {
   const { claims, logout } = useAuth()
   const navigate = useNavigate()
 
+
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between gap-4">

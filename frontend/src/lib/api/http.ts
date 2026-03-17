@@ -1,6 +1,5 @@
-import { getAccessToken, setAccessToken } from '@/lib/api/authTokenStore'
+import { getAccessToken } from '@/lib/api/authTokenStore'
 import { ApiError } from '@/lib/api/errors'
-import { singleFlightRefresh } from '@/lib/api/refreshManager'
 
 type Json = Record<string, unknown> | unknown[] | string | number | boolean | null
 
@@ -27,13 +26,10 @@ async function parseBody(res: Response): Promise<unknown> {
 
 export type RefreshAccessTokenFn = () => Promise<string | null>
 
-let refreshAccessTokenFn: RefreshAccessTokenFn | null = null
-
-/**
- * Injected by Auth feature. The http client uses this to refresh on 401.
- */
-export function setRefreshAccessTokenFn(fn: RefreshAccessTokenFn) {
-  refreshAccessTokenFn = fn
+// Kept for compatibility, but http client no longer auto-retries on 401.
+// Refresh is now handled explicitly by AuthProvider on app load or when needed.
+export function setRefreshAccessTokenFn(_fn: RefreshAccessTokenFn) {
+  // no-op
 }
 
 type RequestOptions = Omit<RequestInit, 'body' | 'headers'> & {
@@ -64,29 +60,19 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
   })
 
-  if (res.status !== 401) {
-    if (!res.ok) {
-      const body = await parseBody(res)
-      throw new ApiError(`Request failed: ${res.status}`, res.status, body)
-    }
-    return (await parseBody(res)) as T
-  }
-
-  // 401: attempt refresh + retry once
-  if (options._retry || !refreshAccessTokenFn) {
+  // No automatic retry on 401: if refresh was needed, AuthProvider should have
+  // already called /api/auth/refresh on load. Any 401 here is treated as an
+  // error and surfaced to the caller.
+  if (!res.ok) {
     const body = await parseBody(res)
-    throw new ApiError(`Unauthorized: ${res.status}`, res.status, body)
+    throw new ApiError(
+      res.status === 401 ? `Unauthorized: ${res.status}` : `Request failed: ${res.status}`,
+      res.status,
+      body,
+    )
   }
 
-  const newToken = await singleFlightRefresh(refreshAccessTokenFn)
-  setAccessToken(newToken)
-
-  if (!newToken) {
-    const body = await parseBody(res)
-    throw new ApiError(`Unauthorized: ${res.status}`, res.status, body)
-  }
-
-  return await request<T>(path, { ...options, _retry: true })
+  return (await parseBody(res)) as T
 }
 
 export const http = {

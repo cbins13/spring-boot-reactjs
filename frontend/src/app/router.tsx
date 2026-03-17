@@ -1,3 +1,4 @@
+﻿import { RolesPermissionsPage } from '@/pages/RolesPermissionsPage'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { RequireAuth } from '@/app/routing/RequireAuth'
 import { RequireAdmin } from '@/app/routing/RequireAdmin'
@@ -16,7 +17,9 @@ export const router = createBrowserRouter([
         element: <RequireAdmin />,
         children: [{ path: '/users', element: <UsersPage /> }],
       },
+      {path: '/roles-permissions', element: <RolesPermissionsPage />},
     ],
   },
 ])
+
 

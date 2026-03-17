@@ -1,17 +1,17 @@
 package com.example.platform.modules.users.dto;
 
-import com.example.platform.modules.users.entity.Role;
 import lombok.Builder;
 import lombok.Value;
 
 import java.time.Instant;
+import java.util.List;
 
 @Value
 @Builder
 public class UserDto {
     Long id;
     String email;
-    Role role;
+    List<String> roles;
     Instant createdAt;
     Instant updatedAt;
 }

@@ -20,6 +20,12 @@ public interface UsersService {
 
     UserDto createUser(CreateUserRequest request, Role role);
 
+    /**
+     * Create a user while providing the actor user id for auditing purposes.
+     * Implementations may emit audit logs using this context.
+     */
+    UserDto createUser(CreateUserRequest request, Role role, Long actorUserId);
+
     UserDto updateUser(long id, UpdateUserRequest request);
 
     void deleteUser(long id);

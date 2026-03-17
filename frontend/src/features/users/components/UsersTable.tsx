@@ -16,7 +16,8 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Email</TableHead>
-            <TableHead className="w-[140px]">Role</TableHead>
+            <TableHead className="w-[200px]">Roles</TableHead>
+            <TableHead className="w-[260px]">Permissions</TableHead>
             <TableHead className="w-[200px]">Created</TableHead>
             <TableHead className="w-[180px] text-right">Actions</TableHead>
           </TableRow>
@@ -25,7 +26,13 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
           {users.map((u) => (
             <TableRow key={u.id}>
               <TableCell>{u.email}</TableCell>
-              <TableCell>{u.role}</TableCell>
+              <TableCell>{u.roles.join(', ')}</TableCell>
+              <TableCell className="text-xs text-muted-foreground">
+                {u.permissions && u.permissions.length > 0
+                  ? u.permissions.slice(0, 3).join(', ') +
+                    (u.permissions.length > 3 ? `, +${u.permissions.length - 3} more` : '')
+                  : '—'}
+              </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {u.createdAt ? new Date(u.createdAt).toLocaleString() : '—'}
               </TableCell>

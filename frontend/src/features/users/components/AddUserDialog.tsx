@@ -87,6 +87,9 @@ export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
             <option value="ROLE_USER">User</option>
             <option value="ROLE_ADMIN">Admin</option>
           </Select>
+          <p className="text-xs text-muted-foreground">
+            Users can have multiple roles; this selects the primary role on creation.
+          </p>
         </div>
 
         {error && <p className="text-sm text-destructive">{error}</p>}

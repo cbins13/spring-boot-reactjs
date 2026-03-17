@@ -3,9 +3,12 @@ package com.example.platform.modules.users.service;
 import com.example.platform.modules.users.dto.CreateUserRequest;
 import com.example.platform.modules.users.dto.UpdateUserRequest;
 import com.example.platform.modules.users.dto.UserDto;
+import com.example.platform.modules.audit.service.AuditService;
 import com.example.platform.modules.users.entity.Role;
+import com.example.platform.modules.users.entity.RoleEntity;
 import com.example.platform.modules.users.entity.UserEntity;
 import com.example.platform.modules.users.mapper.UserMapper;
+import com.example.platform.modules.users.repository.RoleRepository;
 import com.example.platform.modules.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +24,8 @@ public class UsersServiceImpl implements UsersService {
     private final UsersRepository usersRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final AuditService auditService;
 
     @Override
     @Transactional(readOnly = true)
@@ -38,16 +43,33 @@ public class UsersServiceImpl implements UsersService {
     @Override
     @Transactional
     public UserDto createUser(CreateUserRequest request, Role role) {
+        return createUser(request, role, null);
+    }
+
+    @Override
+    @Transactional
+    public UserDto createUser(CreateUserRequest request, Role role, Long actorUserId) {
         if (usersRepository.existsByEmail(request.getEmail().toLowerCase())) {
             throw new IllegalArgumentException("Email already in use");
         }
         Role effectiveRole = request.getRole() != null ? request.getRole() : role;
+        RoleEntity roleEntity = roleRepository.findByName(effectiveRole.name())
+                .orElseThrow(() -> new IllegalArgumentException("Unknown role: " + effectiveRole));
+        java.util.Set<RoleEntity> roles = new java.util.HashSet<>();
+        roles.add(roleEntity);
         UserEntity entity = UserEntity.builder()
                 .email(request.getEmail().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(effectiveRole)
+                .roles(roles)
                 .build();
-        return userMapper.toDto(usersRepository.save(entity));
+        UserEntity saved = usersRepository.save(entity);
+
+        // Only log here when we know the distinct actor (e.g. admin-created users).
+        if (actorUserId != null) {
+            auditService.logUserCreated(actorUserId, saved.getId(), saved.getEmail());
+        }
+
+        return userMapper.toDto(saved);
     }
 
     @Override
@@ -65,7 +87,11 @@ public class UsersServiceImpl implements UsersService {
             entity.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         if (request.getRole() != null) {
-            entity.setRole(request.getRole());
+            RoleEntity roleEntity = roleRepository.findByName(request.getRole().name())
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown role: " + request.getRole()));
+            java.util.Set<RoleEntity> roles = new java.util.HashSet<>();
+            roles.add(roleEntity);
+            entity.setRoles(roles);
         }
         return userMapper.toDto(usersRepository.save(entity));
     }
@@ -82,7 +108,9 @@ public class UsersServiceImpl implements UsersService {
     @Override
     @Transactional(readOnly = true)
     public Optional<UserEntity> findEntityByEmail(String email) {
-        return usersRepository.findByEmail(email.toLowerCase());
+        // Use the fetch join query to eagerly load roles and permissions,
+        // preventing LazyInitializationException when UserPrincipal accesses them.
+        return usersRepository.findByEmailWithRolesAndPermissions(email.toLowerCase());
     }
 
     @Override

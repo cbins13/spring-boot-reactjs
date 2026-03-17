@@ -17,7 +17,7 @@ type EditUserDialogProps = {
 
 export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps) {
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<UserDto['role']>('ROLE_USER')
+  const [role, setRole] = useState<'ROLE_USER' | 'ROLE_ADMIN'>('ROLE_USER')
   const [resetPassword, setResetPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showResult, setShowResult] = useState(false)
@@ -26,7 +26,8 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
   useEffect(() => {
     if (user && open) {
       setEmail(user.email)
-      setRole(user.role)
+      const isAdmin = user.roles.includes('ROLE_ADMIN')
+      setRole(isAdmin ? 'ROLE_ADMIN' : 'ROLE_USER')
       setResetPassword(false)
       setError(null)
     }
@@ -45,7 +46,11 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
     const body: UpdateUserRequest = {}
     if (email && email !== user.email) body.email = email
     if (resetPassword) body.password = 'Password123!'
-    if (role && role !== user.role) body.role = role
+    const currentIsAdmin = user.roles.includes('ROLE_ADMIN')
+    const desiredIsAdmin = role === 'ROLE_ADMIN'
+    if (desiredIsAdmin !== currentIsAdmin) {
+      body.role = role
+    }
 
     try {
       await updateUser.mutateAsync({ id: user.id, body })
@@ -62,7 +67,10 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
 
   if (!user) return null
 
-  const isDirty = email !== user.email || role !== user.role || resetPassword
+  const isDirty =
+    email !== user.email ||
+    resetPassword ||
+    user.roles.includes('ROLE_ADMIN') !== (role === 'ROLE_ADMIN')
 
   return (
     <>
@@ -79,7 +87,11 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
 
         <div className="space-y-2">
           <Label htmlFor="role">Role</Label>
-          <Select id="role" value={role} onChange={(e) => setRole(e.target.value as UserDto['role'])}>
+          <Select
+            id="role"
+            value={role}
+            onChange={(e) => setRole(e.target.value as 'ROLE_USER' | 'ROLE_ADMIN')}
+          >
             <option value="ROLE_USER">User</option>
             <option value="ROLE_ADMIN">Admin</option>
           </Select>

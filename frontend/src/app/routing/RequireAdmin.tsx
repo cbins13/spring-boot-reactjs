@@ -4,7 +4,7 @@ import { useAuth } from '@/app/providers/AuthProvider'
 export function RequireAdmin() {
   const { status, claims } = useAuth()
   const location = useLocation()
-  const role = (claims?.role as string | undefined) ?? (claims?.['role'] as string | undefined)
+  const role = (claims?.roles as string [] | undefined);
 
   if (status === 'checking') {
     return (
@@ -18,7 +18,7 @@ export function RequireAdmin() {
     return <Navigate to="/login" replace state={{ from: location }} />
   }
 
-  if (role !== 'ROLE_ADMIN') {
+  if (!role?.includes('ROLE_ADMIN')) {
     return <Navigate to="/home" replace />
   }
 

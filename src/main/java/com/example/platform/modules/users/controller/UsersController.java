@@ -34,8 +34,9 @@ public class UsersController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public UserDto create(@Valid @RequestBody CreateUserRequest request) {
-        return usersService.createUser(request, Role.ROLE_USER);
+    public UserDto create(@Valid @RequestBody CreateUserRequest request,
+                          @AuthenticationPrincipal UserPrincipal principal) {
+        return usersService.createUser(request, Role.ROLE_USER, principal.getUserId());
     }
 
     @PutMapping("/{id}")

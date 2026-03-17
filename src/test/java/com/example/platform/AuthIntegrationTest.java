@@ -44,7 +44,7 @@ class AuthIntegrationTest extends OracleTestContainerConfig {
         UserEntity user = usersService.findEntityByEmail("user1@example.com").orElseThrow();
         HttpHeaders authHeaders = new HttpHeaders();
         authHeaders.setBearerAuth(access1);
-        HttpEntity<UpdateUserRequest> updateReq = new HttpEntity<>(new UpdateUserRequest("user1+new@example.com", null), authHeaders);
+        HttpEntity<UpdateUserRequest> updateReq = new HttpEntity<>(new UpdateUserRequest("user1+new@example.com", null, null), authHeaders);
         ResponseEntity<String> updateResp = restTemplate.exchange(
                 "/api/users/" + user.getId(),
                 HttpMethod.PUT,

@@ -1,7 +1,12 @@
 export type UserDto = {
   id: number
   email: string
-  role: 'ROLE_USER' | 'ROLE_ADMIN'
+  roles: string[]
+  /**
+   * Optional list of effective permissions for the user.
+   * Backend may choose to omit this; the UI should handle undefined gracefully.
+   */
+  permissions?: string[]
   createdAt?: string
   updatedAt?: string
 }

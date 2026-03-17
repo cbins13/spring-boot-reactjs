@@ -1,6 +1,5 @@
 package com.example.platform.security.jwt;
 
-import com.example.platform.modules.users.entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -38,7 +37,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .subject(Long.toString(claims.getUserId()))
                 .claim("email", claims.getEmail())
-                .claim("role", claims.getRole().name())
+                .claim("roles", claims.getRoles())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
                 .signWith(secretKey, Jwts.SIG.HS256)
@@ -58,12 +57,12 @@ public class JwtTokenProvider {
 
         long userId = Long.parseLong(body.getSubject());
         String email = body.get("email", String.class);
-        String roleStr = body.get("role", String.class);
-        Role role = Role.valueOf(roleStr);
+        @SuppressWarnings("unchecked")
+        java.util.List<String> roles = body.get("roles", java.util.List.class);
         return JwtClaims.builder()
                 .userId(userId)
                 .email(email)
-                .role(role)
+                .roles(roles != null ? roles : java.util.List.of())
                 .build();
     }
 }
